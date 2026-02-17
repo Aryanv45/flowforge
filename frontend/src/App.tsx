@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { login, getMe } from './api';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [token, setToken] = useState<string | null>(null);
+  const [me, setMe] = useState<any>(null);
+
+  const handleLogin = async () => {
+    const res = await login(email, password);
+    setToken(res.access_token);
+  };
+
+  const fetchMe = async () => {
+    if (!token) return;
+    const data = await getMe(token);
+    setMe(data);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ padding: 40 }}>
+      <h1>FlowForge</h1>
+
+      {!token ? (
+        <>
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <br />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <br />
+          <button onClick={handleLogin}>Login</button>
+        </>
+      ) : (
+        <>
+          <p>Logged in</p>
+          <button onClick={fetchMe}>Fetch /me</button>
+          <pre>{JSON.stringify(me, null, 2)}</pre>
+        </>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
